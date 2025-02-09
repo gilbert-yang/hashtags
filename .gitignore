@@ -1,0 +1,23 @@
+# Ignore class files
+*.class
+
+# Ignore all build directories (for Maven, Gradle, etc.)
+target/
+build/
+
+# Ignore IDE-specific files (for IntelliJ IDEA, Eclipse, etc.)
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Ignore dependency directories
+lib/
+
+# Ignore log files
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
