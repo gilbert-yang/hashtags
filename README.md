@@ -75,7 +75,14 @@ Exits the calculator.
 ## Key Design Considerations
 
 ### Storing the Graph in Memory
-The graph is stored using two maps: one for edges and one for nodes. The structure assumes:
+This calculator stores the entire graph in memory after eliminating unnecessary information. A dataset with 100 million unique edges is estimated to require approximately 30GB of memory.
+
+The graph is represented using two maps:
+
+- Nodes Map: Tracks the occurrence of each unique node.
+- Edges Map: Stores the relationships between nodes.
+
+The structure assumes:
 
 1. An average of 3 hashtags per tweet.
 2. Each hashtag consists of ~10 characters.
