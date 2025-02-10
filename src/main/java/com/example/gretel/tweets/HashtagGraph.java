@@ -105,13 +105,9 @@ public class HashtagGraph {
         // Parallelize the processing of each line, by default using the number of available processors
         try (Stream<String> lines = Files.lines(Paths.get(path))) {
             lines.parallel().forEach(line -> {
-                try {
-                    Set<String> hashtags = getHashTagsFromLine(line);
-                    if (!hashtags.isEmpty()) {
-                        addTweet(hashtags);
-                    }
-                } catch (Exception e) {
-                    logger.warning("Skipping invalid tweet line: " + e.getMessage());
+                Set<String> hashtags = getHashTagsFromLine(line);
+                if (!hashtags.isEmpty()) {
+                    addTweet(hashtags);
                 }
             });
             logger.info("Graph initialized.");
