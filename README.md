@@ -106,7 +106,7 @@ The structure assumes:
 For **100 million unique edges**, the estimated memory usage is **~29.6GB**, which is manageable on modern hardware.
 
 ### Efficient Average Degree Calculation
-We maintain the total number of nodes (`N`) and edges (`E`) in memory. Updates occur in **O(1) time complexity**, allowing instant average degree calculations.
+We maintain the total number of nodes (`N`) and edges (`E`) in memory. Update, remove and calculate average occur in **O(1) time complexity**.
 
 ### Optimized Parsing Logic
 The original tweet data contains redundant information, but our application only requires hashtags. To improve efficiency, we utilize JsonParser with token-based parsing to directly extract the hashtags section, eliminating the need to parse the entire JSON tree. This approach significantly reduces memory usage and processing time.
