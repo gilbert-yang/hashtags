@@ -41,6 +41,17 @@ mvn -v
 ```sh
 mvn clean package
 java -cp target/graph-1.0-SNAPSHOT.jar com.example.gretel.tweets.GraphCalculator
+
+# Enter a command (init, add, remove, list-all, avg, help, exit), if you don't know how to use, type help:
+init
+
+#Enter the path to the file, if you input nothing, it will use the default input in src/main/java/com/example/gretel/static/tweets.txt:
+
+# type return in here
+
+#You did not enter a path. Using default path: src/main/java/com/example/gretel/static/tweets.txt
+#Graph initialized.
+#Time taken: 1516 ms
 ```
 
 ---
