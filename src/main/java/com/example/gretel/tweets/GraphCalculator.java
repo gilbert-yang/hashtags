@@ -1,21 +1,13 @@
 package com.example.gretel.tweets;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 public class GraphCalculator {
+
     private static HashtagGraph graph;
     /**
      * Initialize the graph with a file containing tweets in JSON format.

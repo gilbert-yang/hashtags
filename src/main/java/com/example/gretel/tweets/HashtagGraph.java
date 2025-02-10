@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -20,6 +21,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HashtagGraph {
+    private static final Logger logger = Logger.getLogger(HashtagGraph.class.getName());
+    
     private final Map<String, Integer> nodesCount = new ConcurrentHashMap<>();
     private final Map<String, Integer> edgeMap = new ConcurrentHashMap<>();
     private final Map<String, Integer> tagsCount = new ConcurrentHashMap<>();
@@ -34,6 +37,59 @@ public class HashtagGraph {
         loadGraphFromFile(path);
     }
 
+    private Set<String> getHashTagsFromLine(String line) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Set<String> hashtags = new HashSet<>();
+        try (JsonParser parser = objectMapper.getFactory().createParser(line)) {
+            // Parse hashtags directly from "text" field, avoid parsing the entire tweet text
+            while (parser.nextToken() != null) {
+                if (parser.currentToken() == JsonToken.FIELD_NAME) {
+                    String fieldName = parser.getCurrentName();
+                    
+                    // Process only the main tweet's entities
+                    if ("entities".equals(fieldName)) {
+                        parser.nextToken(); // Enter "entities" object
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            if (parser.currentToken() == JsonToken.FIELD_NAME && 
+                                "hashtags".equals(parser.getCurrentName())) {
+                                
+                                parser.nextToken(); // Enter "hashtags" array
+                                while (parser.nextToken() != JsonToken.END_ARRAY) { 
+                                    // Process each hashtag object
+                                    String text = null;
+                                    while (parser.nextToken() != JsonToken.END_OBJECT) {
+                                        if (parser.currentToken() == JsonToken.FIELD_NAME && 
+                                            "text".equals(parser.getCurrentName())) {
+                                            
+                                            parser.nextToken(); // Move to VALUE_STRING
+                                            text = parser.getText().toLowerCase();
+                                        }
+                                    }
+                                    if (text != null && !text.isEmpty()) {
+                                        hashtags.add(text);
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                    // Since quoted_status will contains hashtags too, we need to skip quoted_status entirely
+                    else if ("quoted_status".equals(fieldName)) {
+                        parser.nextToken(); // Move to quoted_status value (START_OBJECT)
+                        parser.skipChildren(); // Skip the entire quoted_status object
+                    } 
+                    // Skip other fields
+                    else {
+                        parser.nextToken(); // Move to field value
+                        parser.skipChildren(); // Skip objects/arrays
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.warning("Error reading line: " + e.getMessage());
+        }
+        return hashtags;
+    }
+
     /**
      * Load graph from a file containing tweets in JSON format.
      * Parse hashtags directly from "text" field, avoid parsing the entire tweet text.
@@ -41,64 +97,22 @@ public class HashtagGraph {
      */
     private void loadGraphFromFile(String path) {
         long start = System.currentTimeMillis();
-        ObjectMapper objectMapper = new ObjectMapper();
         // Parallelize the processing of each line, by default using the number of available processors
         try (Stream<String> lines = Files.lines(Paths.get(path))) {
             lines.parallel().forEach(line -> {
-                try (JsonParser parser = objectMapper.getFactory().createParser(line)) {
-                    Set<String> hashtags = new HashSet<>();
-                    // Parse hashtags directly from "text" field, avoid parsing the entire tweet text
-                    while (parser.nextToken() != null) {
-                        if (parser.currentToken() == JsonToken.FIELD_NAME) {
-                            String fieldName = parser.getCurrentName();
-                            
-                            // Process only the main tweet's entities
-                            if ("entities".equals(fieldName)) {
-                                parser.nextToken(); // Enter "entities" object
-                                while (parser.nextToken() != JsonToken.END_OBJECT) {
-                                    if (parser.currentToken() == JsonToken.FIELD_NAME && 
-                                        "hashtags".equals(parser.getCurrentName())) {
-                                        
-                                        parser.nextToken(); // Enter "hashtags" array
-                                        while (parser.nextToken() != JsonToken.END_ARRAY) { 
-                                            // Process each hashtag object
-                                            String text = null;
-                                            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                                                if (parser.currentToken() == JsonToken.FIELD_NAME && 
-                                                    "text".equals(parser.getCurrentName())) {
-                                                    
-                                                    parser.nextToken(); // Move to VALUE_STRING
-                                                    text = parser.getText().toLowerCase();
-                                                }
-                                            }
-                                            if (text != null && !text.isEmpty()) {
-                                                hashtags.add(text);
-                                            }
-                                        }
-                                    }
-                                }
-                            } 
-                            // Since quoted_status will contains hashtags too, we need to skip quoted_status entirely
-                            else if ("quoted_status".equals(fieldName)) {
-                                parser.nextToken(); // Move to quoted_status value (START_OBJECT)
-                                parser.skipChildren(); // Skip the entire quoted_status object
-                            } 
-                            // Skip other fields
-                            else {
-                                parser.nextToken(); // Move to field value
-                                parser.skipChildren(); // Skip objects/arrays
-                            }
-                        }
+                try {
+                    Set<String> hashtags = getHashTagsFromLine(line);
+                    if (!hashtags.isEmpty()) {
+                        addTweet(hashtags);
                     }
-                    addTweet(hashtags);
-                } catch (IOException e) {
-                    System.out.println("Error reading line: " + e.getMessage());
+                } catch (Exception e) {
+                    logger.warning("Skipping invalid tweet line: " + e.getMessage());
                 }
             });
-            System.out.println("Graph initialized.");
-            System.out.println("Time taken: " + (System.currentTimeMillis() - start) + " ms");
+            logger.info("Graph initialized.");
+            logger.info("Time taken: " + (System.currentTimeMillis() - start) + " ms");
         } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
+            logger.severe("Error reading file: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
