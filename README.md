@@ -134,12 +134,12 @@ For further details, refer to the implementation in `HashtagGraph.java`.
 ---
 
 ## Future Improvements
-- Implement persistent storage for scalability. e.g., Redis or Dynamo DB.
-- Optimize memory usage further using compact data structures.
-- Support real-time streaming data updates.
 - For large-scale datasets, consider the following optimizations:
    - Use a distributed data processing framework like Apache Spark to parallelize computations efficiently across multiple nodes.
    - Leverage a graph database (e.g., Neo4j, Amazon Neptune) to store edges and compute metrics such as the average degree, reducing memory overhead and improving query performance.
+- Implement persistent storage for scalability. e.g., Redis or Dynamo DB.
+- Optimize memory usage further using compact data structures.
+- Support real-time streaming data updates.
 
 Feel free to contribute or raise issues for discussions! 🚀
 
