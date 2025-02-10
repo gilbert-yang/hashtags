@@ -37,6 +37,11 @@ public class HashtagGraph {
         loadGraphFromFile(path);
     }
 
+    /**
+     * Parse hashtags from a tweet JSON string.
+     * @param line
+     * @return hashtags
+     */
     private Set<String> getHashTagsFromLine(String line) {
         ObjectMapper objectMapper = new ObjectMapper();
         Set<String> hashtags = new HashSet<>();
