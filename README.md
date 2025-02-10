@@ -53,10 +53,10 @@ When you launch the calculator, you can use the following commands:
 Initializes the tweet graph. By default, it uses the file located at `src/main/java/com/example/gretel/static/tweets.txt`.
 
 ### `add`
-Adds a new tweet to the graph. Input format: `#tag1,#tag2,#tag3`.
+Adds a new tweet to the graph. For simplicity, we only add the tags. Input format: `tag1|tag2|tag3`.
 
 ### `remove`
-Removes an existing tweet. If the tweet does not exist, the command returns `false`. Input format: `#tag1,#tag2,#tag3`.
+Removes an existing tweet. If the tweet does not exist, the command returns `false`. For simplicity, we only remove the tweets by tags. The existent of a tweet is the combination of the sorted hashtags. You can find all tweets by running list-all command. Input format: `tag1|tag2|tag3`.
 
 ### `list-all`
 Lists all existing tweets. By default, it shows the first 100 tweets.
