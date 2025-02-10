@@ -12,85 +12,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public class GraphCalculator {
     private static HashtagGraph graph;
-
+    /**
+     * Initialize the graph with a file containing tweets in JSON format.
+     * @param scanner
+     */
     public static void initGraphCmd(Scanner scanner) {
-    
         System.out.println("Enter the path to the file, if you input nothing, it will use the default input in src/main/java/com/example/gretel/static/tweets.txt:");
         String path = scanner.nextLine().trim();
         if (path.isEmpty()) {
             path = "src/main/java/com/example/gretel/static/tweets.txt";
             System.out.println("You did not enter a path. Using default path: " + path);
         }
-        // src/main/java/com/example/gretel/static/tweets.txt
-        // In GraphCalculator.java - Parse hashtags directly from "text" field
-        // Avoid parsing the entire tweet text
-        long start = System.currentTimeMillis();
-        graph = new HashtagGraph();
-        ObjectMapper objectMapper = new ObjectMapper();
-        // Parallelize the processing of each line, by default using the number of available processors
-        try (Stream<String> lines = Files.lines(Paths.get(path))) {
-            lines.parallel().forEach(line -> {
-                try (JsonParser parser = objectMapper.getFactory().createParser(line)) {
-                    Set<String> hashtags = new HashSet<>();
-                    // Parse hashtags directly from "text" field, avoid parsing the entire tweet text
-                    while (parser.nextToken() != null) {
-                        if (parser.currentToken() == JsonToken.FIELD_NAME) {
-                            String fieldName = parser.getCurrentName();
-                            
-                            // Process only the main tweet's entities
-                            if ("entities".equals(fieldName)) {
-                                parser.nextToken(); // Enter "entities" object
-                                while (parser.nextToken() != JsonToken.END_OBJECT) {
-                                    if (parser.currentToken() == JsonToken.FIELD_NAME && 
-                                        "hashtags".equals(parser.getCurrentName())) {
-                                        
-                                        parser.nextToken(); // Enter "hashtags" array
-                                        while (parser.nextToken() != JsonToken.END_ARRAY) { 
-                                            // Process each hashtag object
-                                            String text = null;
-                                            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                                                if (parser.currentToken() == JsonToken.FIELD_NAME && 
-                                                    "text".equals(parser.getCurrentName())) {
-                                                    
-                                                    parser.nextToken(); // Move to VALUE_STRING
-                                                    text = parser.getText().toLowerCase();
-                                                }
-                                            }
-                                            if (text != null && !text.isEmpty()) {
-                                                hashtags.add(text);
-                                            }
-                                        }
-                                    }
-                                }
-                            } 
-                            // Since quoted_status will contains hashtags too, we need to skip quoted_status entirely
-                            else if ("quoted_status".equals(fieldName)) {
-                                parser.nextToken(); // Move to quoted_status value (START_OBJECT)
-                                parser.skipChildren(); // Skip the entire quoted_status object
-                            } 
-                            // Skip other fields
-                            else {
-                                parser.nextToken(); // Move to field value
-                                parser.skipChildren(); // Skip objects/arrays
-                            }
-                        }
-                    }
-                    graph.addTweet(hashtags);
-                } catch (IOException e) {
-                    System.out.println("Error reading line: " + e.getMessage());
-                }
-            });
-            System.out.println("Graph initialized.");
-            System.out.println("Time taken: " + (System.currentTimeMillis() - start) + " ms");
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
-        }
+        graph = new HashtagGraph(path);
+        
     }
 
+    /**
+     * Parse hashtags from input string.
+     * @param input
+     * @return
+     */
     private static List<String> parseHashtags(String input) {
         List<String> hashtags = new ArrayList<>();
         for (String tag : input.replaceAll("\\s+","").split(",")) {
@@ -99,6 +45,10 @@ public class GraphCalculator {
         return hashtags;
     }
 
+    /**
+     * Add a new tweet to the graph.
+     * @param scanner
+     */
     private static void addTweetCmd(Scanner scanner) {
         System.out.println("Enter hashtags, for example #data,#gretel :");
         String input = scanner.nextLine().trim();
@@ -110,6 +60,10 @@ public class GraphCalculator {
         System.out.println("Tweet added.");
     }
 
+    /**
+     * Remove a tweet from the graph using its hashtags.
+     * @param scanner
+     */
     private static void removeTweetCmd(Scanner scanner) {
         System.out.println("Enter hashtags to remove, for example #data,#gretel:");
         String input = scanner.nextLine().trim();
@@ -124,6 +78,10 @@ public class GraphCalculator {
         }
     }
 
+    /**
+     * List all tweets currently stored in the graph.
+     * @param scanner
+     */
     private static void listGraphCmd(Scanner scanner) {
         System.out.println("Enter lines you want to show, defaul 100:");
         String input = scanner.nextLine().trim();
@@ -156,15 +114,31 @@ public class GraphCalculator {
                     // default path: src/main/java/com/example/gretel/static/tweets.txt
                     break;
                 case "add":
+                    if (graph == null) {
+                        System.out.println("Graph not initialized. Please run 'init' command first.");
+                        break;
+                    }
                     addTweetCmd(scanner);
                     break;
                 case "remove":
+                    if (graph == null) {
+                        System.out.println("Graph not initialized. Please run 'init' command first.");
+                        break;
+                    }
                     removeTweetCmd(scanner);
                     break;
                 case "list-all":
+                    if (graph == null) {
+                        System.out.println("Graph not initialized. Please run 'init' command first.");
+                        break;
+                    }
                     listGraphCmd(scanner);
                     break;
                 case "avg":
+                    if (graph == null) {
+                        System.out.println("Graph not initialized. Please run 'init' command first.");
+                        break;
+                    }
                     System.out.printf("Average Degree: %.3f%n", graph.getAverageDegree());
                     break;
                 case "help":
