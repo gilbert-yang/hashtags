@@ -152,7 +152,6 @@ public class HashtagGraph {
         List<String> sortedTags = new ArrayList<>(hashtags);
         Collections.sort(sortedTags);
         String hashtagsKey = String.join("|", sortedTags);
-
         if (!tagsCount.containsKey(hashtagsKey)) {
             return false;
         }
@@ -211,5 +210,9 @@ public class HashtagGraph {
 
     public Map<String, Integer> getEdgeMap() {
         return Collections.unmodifiableMap(edgeMap);
+    }
+
+    public Map<String, Integer> getTagsCount() {
+        return Collections.unmodifiableMap(tagsCount);
     }
 }

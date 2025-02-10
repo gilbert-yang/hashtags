@@ -39,8 +39,8 @@ public class GraphCalculator {
      */
     private static List<String> parseHashtags(String input) {
         List<String> hashtags = new ArrayList<>();
-        for (String tag : input.replaceAll("\\s+","").split(",")) {
-            hashtags.add(tag.replaceAll("\\#", "").trim().toLowerCase());
+        for (String tag : input.replaceAll("\\s*", "").split("\\|")) {
+            hashtags.add(tag.toLowerCase());
         }
         return hashtags;
     }
@@ -50,7 +50,7 @@ public class GraphCalculator {
      * @param scanner
      */
     private static void addTweetCmd(Scanner scanner) {
-        System.out.println("Enter hashtags, for example #data,#gretel :");
+        System.out.println("Enter hashtags, for example data|gretel|test :");
         String input = scanner.nextLine().trim();
         Set<String> hashtags = new HashSet<>();
         for (String tag : parseHashtags(input)) {
@@ -65,7 +65,7 @@ public class GraphCalculator {
      * @param scanner
      */
     private static void removeTweetCmd(Scanner scanner) {
-        System.out.println("Enter hashtags to remove, for example #data,#gretel:");
+        System.out.println("Enter hashtags to remove, for example data|gretel|test :");
         String input = scanner.nextLine().trim();
         Set<String> hashtags = new HashSet<>();
         for (String tag : parseHashtags(input)) {
@@ -82,7 +82,7 @@ public class GraphCalculator {
      * List all tweets currently stored in the graph.
      * @param scanner
      */
-    private static void listGraphCmd(Scanner scanner) {
+    private static void listTweetCmd(Scanner scanner) {
         System.out.println("Enter lines you want to show, defaul 100:");
         String input = scanner.nextLine().trim();
         if (input.isEmpty()) {
@@ -94,7 +94,7 @@ public class GraphCalculator {
         //         System.out.println(tag + " : " + count + " occurrences"));
         int lines = Integer.parseInt(input);
         System.out.println("\nEdges (Co-occurring Hashtags):");
-        graph.getEdgeMap().entrySet()
+        graph.getTagsCount().entrySet()
             .stream()
             .limit(lines)
             .forEach(entry -> System.out.println(entry.getKey() + " -> " + entry.getValue()));
@@ -132,7 +132,7 @@ public class GraphCalculator {
                         System.out.println("Graph not initialized. Please run 'init' command first.");
                         break;
                     }
-                    listGraphCmd(scanner);
+                    listTweetCmd(scanner);
                     break;
                 case "avg":
                     if (graph == null) {
